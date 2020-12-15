@@ -5,6 +5,8 @@ const {URLSearchParams} = require('url');
 const wiOrigin = process.env.wi_origin;
 const apiOrigin = process.env.api_origin
 const inspectUrl = process.env.inspect_url;
+const gitBranch = process.env.git_branch;
+const gitCommitId = process.env.git_commit_id;
 
 const projectName = process.env.project_name;
 const verbose = process.env.verbose === 'true';
@@ -13,7 +15,6 @@ const gl = {
   apiToken: null,
   scanId: null
 }
-
 
 async function doRequest(method, url, headers, bodyForm) {
   if (!headers) {
@@ -30,6 +31,12 @@ async function doRequest(method, url, headers, bodyForm) {
   }
   try {
     const response = await fetch(url, opts)
+    if (!response.ok) {
+      console.error('Response status code is not 2xx for ' + url)
+      console.error(response.status)
+      console.error(await response.text())
+      process.exit(1)
+    }
     return await response.json()
   } catch (err) {
     console.error(err.stack)
@@ -77,8 +84,25 @@ async function createScan() {
     },
     "CrawlAuditMode": "CrawlAndAudit"
   }
+  if (verbose) {
+    console.log('Creating scan...')
+    console.log('body=', bodyForm)
+  }
   const res = await wiPost('/scanner/scans', {}, bodyForm)
-  console.log(res)
-  gl.scanId = res['ScanId']
-  console.log(gl.scanId)
+  await writeToDB(res['ScanId'])
+}
+
+async function writeToDB(scanId) {
+  const bodyForm = {
+    scan_id: scanId,
+    project_name: projectName,
+    branch: gitBranch,
+    commit_id: gitCommitId
+  }
+  if (verbose) {
+    console.log('Writing into DB...')
+    console.log('body=', bodyForm)
+  }
+  await apiPost('/webinspect/create_scan', {}, bodyForm)
+  if (verbose) console.log('Job done.')
 }

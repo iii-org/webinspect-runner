@@ -6,6 +6,7 @@ Runner for WebInspect
 - api_origin=
 - wi_origin=
 - git_branch=develop
+- commit_id=develop
 - verbose=true
 - project_name=ro-test
 - api_username=
