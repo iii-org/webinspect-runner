@@ -15,14 +15,34 @@ const gl = {
 }
 
 
+async function doRequest(method, url, headers, bodyForm) {
+  if (!headers) {
+    headers = {};
+  }
+  const opts = {headers}
+  opts.method = method
+  if (bodyForm) {
+    const params = new URLSearchParams();
+    for (let key in bodyForm) {
+      params.append(key, bodyForm[key])
+    }
+    opts.body = params
+  }
+  try {
+    const response = await fetch(url, opts)
+    return await response.json()
+  } catch (err) {
+    console.error(err.stack)
+    process.exit(1)
+  }
+}
+
 async function apiGet(path, headers) {
   if (!headers) {
     headers = {};
   }
   headers['Authorization'] = `Bearer ${gl.apiToken}`;
-  const opts = {headers}
-  const response = await fetch(apiOrigin + path, opts)
-  return await response.json()
+  return await doRequest('GET', apiOrigin + path, headers)
 }
 
 async function apiPost(path, headers, bodyForm) {
@@ -30,40 +50,22 @@ async function apiPost(path, headers, bodyForm) {
     headers = {};
   }
   headers['Authorization'] = `Bearer ${gl.apiToken}`;
-  const params = new URLSearchParams();
-  for (let key in bodyForm) {
-    params.append(key, bodyForm[key])
-  }
-  const opts = {method: 'POST', headers, body: params}
-  const response = await fetch(apiOrigin + path, opts)
-  return await response.json()
+  return await doRequest('POST', apiOrigin + path, headers, bodyForm)
 }
 
 async function wiGet(path, headers) {
-  if (!headers) {
-    headers = {};
-  }
-  const opts = {headers}
-  const response = await fetch(apiOrigin + path, opts)
-  return await response.json()
+  return await doRequest('GET', wiOrigin + path, headers)
 }
 
 async function wiPost(path, headers, bodyForm) {
-  if (!headers) {
-    headers = {};
-  }
-  const params = new URLSearchParams();
-  for (let key in bodyForm) {
-    params.append(key, bodyForm[key])
-  }
-  const opts = {method: 'POST', headers, body: params}
-  const response = await fetch(apiOrigin + path, opts)
-  return await response.json()
+  return await doRequest('POST', wiOrigin + path, headers, bodyForm)
 }
 
 // ------------------- Routine Start -------------------
 
-await createScan()
+(async () => {
+  await createScan()
+})()
 
 async function createScan() {
   const bodyForm = {
@@ -75,7 +77,7 @@ async function createScan() {
     },
     "CrawlAuditMode": "CrawlAndAudit"
   }
-  const res = wiPost('/scanner/scans', {}, bodyForm)
+  const res = await wiPost('/scanner/scans', {}, bodyForm)
   console.log(res)
   gl.scanId = res['ScanId']
   console.log(gl.scanId)
