@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const parse = require('url-parse');
 const {URLSearchParams} = require('url');
 
-const wiOrigin = process.env.wi_origin;
+const wiOrigin = process.env.wi_base_url;
 const apiOrigin = process.env.api_origin
 const inspectUrl = process.env.inspect_url;
 const gitBranch = process.env.git_branch;
