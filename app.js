@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const parse = require('url-parse');
 const {URLSearchParams} = require('url');
 
-const wiOrigin = process.env.wi_origin;
+const wiOrigin = process.env.wi_base_url;
 const apiOrigin = process.env.api_origin
 const inspectUrl = process.env.inspect_url;
 const gitBranch = process.env.git_branch;
@@ -92,7 +92,16 @@ async function createScan() {
   await writeToDB(res['ScanId'])
 }
 
+async function apiLogin() {
+  const res = await apiPost('/user/login', {}, {
+    username: process.env['api_username'],
+    password: process.env['api_password']
+  })
+  gl.apiToken = res.data.token;
+}
+
 async function writeToDB(scanId) {
+  await apiLogin()
   const bodyForm = {
     scan_id: scanId,
     project_name: projectName,
