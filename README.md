@@ -2,7 +2,6 @@
 Runner for WebInspect
 
 # Usage
-# Usage
 ```bash
 $ docker pull iiiorg/webinspect-runner
 # Or use .env file by docker run --env-file=.env
