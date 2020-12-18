@@ -20,15 +20,13 @@ async function doRequest(method, url, headers, bodyForm) {
   if (!headers) {
     headers = {};
   }
+  headers['Content-Type'] = 'application/json'
   const opts = {headers}
   opts.method = method
   if (bodyForm) {
-    const params = new URLSearchParams();
-    for (let key in bodyForm) {
-      params.append(key, bodyForm[key])
-    }
-    opts.body = params
+    opts.body = JSON.stringify(bodyForm)
   }
+  console.log('opts=', opts.body);
   try {
     const response = await fetch(url, opts)
     if (!response.ok) {
